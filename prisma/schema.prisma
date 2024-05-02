@@ -13,5 +13,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  ADMIN
+  REGULAR
+  PREMIUM
+}
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  email       String   @unique
+  password    String
+  name        String
+  role        UserRole @default(REGULAR)
+}
 
+model Course {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  videos        Video[]
+  description   String
+  PDFs          PDF[]
+  is_sup        Boolean
+  level         String
+  language      String
+  is_premium    Boolean
+  date_created  DateTime @default(now())
+  date_updated  DateTime @updatedAt
+}
 
+model Video {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  url   String
+  title String
+  courseId String @db.ObjectId
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model PDF {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  url   String
+  title String
+  courseId String @db.ObjectId
+  course Course @relation(fields: [courseId], references: [id])
+}
