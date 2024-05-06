@@ -50,7 +50,7 @@ model Video {
 
 model PDF {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
-  url   String
+  content  Bytes
   title String
   courseId String @db.ObjectId
   course Course @relation(fields: [courseId], references: [id])

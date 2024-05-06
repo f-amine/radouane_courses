@@ -22,28 +22,35 @@ export const POST = async (req:Request) => {
     }
 }
 export const GET = async (req: Request) => {
-
     const baseurl = new URL(req.url);
 
     const cursor = baseurl.searchParams.get('cursor'); 
     const pageSize = parseInt(baseurl.searchParams.get('pageSize') || '10', 10);
+    const isPremium = baseurl.searchParams.get('is_premium');
+    const language = baseurl.searchParams.get('language');
+    const isSup = baseurl.searchParams.get('is_sup');
+    const name = baseurl.searchParams.get('name');
+    const level = baseurl.searchParams.get('level');
     try {
         await connectToDatabase();
         const courses = await prisma.course.findMany({
             take: pageSize + 1,
             cursor: cursor ? { id: cursor } : undefined,
-            orderBy: { id: 'desc' }, // Ensure consistent ordering
+            orderBy: { id: 'desc' }, 
+            where: {
+                is_premium: isPremium ? JSON.parse(isPremium) : undefined,
+                language: language ? language : undefined,
+                is_sup: isSup ? JSON.parse(isSup) : undefined,
+                name: name ? { contains: name } : undefined,
+                level: level ? level : undefined
+            },
             include: {
                 videos: true,
                 PDFs: true 
             }
         });
-
-        // Determine if there's a next page
         const hasNextPage = courses.length > pageSize;
-        const nextCursor = hasNextPage ? courses[pageSize].id : null; // Correctly set the next cursor
-
-        // If there's a next page, remove the extra item
+        const nextCursor = hasNextPage ? courses[pageSize].id : null; 
         if (hasNextPage) courses.pop();
 
         return NextResponse.json({ courses, hasNextPage, nextCursor }, { status: 200 });
